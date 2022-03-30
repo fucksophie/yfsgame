@@ -109,7 +109,7 @@ ws.addEventListener("message", msg => {
         const tile = document.getElementById(`x${json.location.x}y${json.location.y}`);
         
         tile.style.backgroundColor = "yellow"
-        tile.innerText = "i am food."
+        tile.innerText = "food"
     }
     if (json.type == "move") {
         const ussr = users.find(e => e.id == json.id);
