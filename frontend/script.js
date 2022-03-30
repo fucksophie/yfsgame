@@ -25,25 +25,25 @@ ws.addEventListener("open", () => {
 })
 
 document.addEventListener("keydown", event => {
-    if (event.which == '40') {
+    if (event.which == '40' || event.which == '83') {
         ws.send(JSON.stringify({
             type: "move",
             location: "down"
         }))
     }
-    if (event.which == '38') {
+    if (event.which == '38' || event.which == '87') {
         ws.send(JSON.stringify({
             type: "move",
             location: "up"
         }))
     }
-    if (event.which == '37') {
+    if (event.which == '37' || event.which == '65') {
         ws.send(JSON.stringify({
             type: "move",
             location: "left"
         }))
     }
-    if (event.which == '39') {
+    if (event.which == '39' || event.which == '68') {
         ws.send(JSON.stringify({
             type: "move",
             location: "right"
