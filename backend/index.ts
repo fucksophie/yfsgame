@@ -2,6 +2,7 @@
 import { serve } from "https://deno.land/std@0.132.0/http/mod.ts";
 import { Collection } from "https://deno.land/x/harmony@v2.6.0/src/utils/collection.ts";
 
+console.log("wow start1")
 interface Location {
   x: number;
   y: number;
