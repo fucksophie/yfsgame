@@ -193,7 +193,7 @@ function reqHandler(req: Request) {
   return response;
 }
 
-serve(reqHandler, { port: 8000 });
+serve(reqHandler, { port: +(Deno.env.get("PORT") || 8000) });
 console.log("started")
 
 setInterval(() => {

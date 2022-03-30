@@ -6,4 +6,4 @@ USER deno
 
 ADD . .
 
-CMD deno run --allow-net backend/index.ts
+CMD deno run --allow-net --allow-env backend/index.ts
