@@ -205,4 +205,4 @@ setInterval(() => {
   sendPacketToAll("food", {
     location
   })
-}, Math.floor(10000/users.size))
+}, 10000)
