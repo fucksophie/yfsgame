@@ -6,4 +6,5 @@ USER deno
 
 ADD . .
 
+CMD deno --version
 CMD deno run --allow-net --unstable --allow-env backend/index.ts
