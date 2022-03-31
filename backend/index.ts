@@ -13,6 +13,7 @@ class User {
   location!: Location;
   ws!: WebSocket;
   drawing!: boolean;
+  food!: number;
 
   constructor(name: string, location: { x: number; y: number }, ws: WebSocket) {
     this.name = name;
@@ -79,7 +80,7 @@ function reqHandler(req: Request) {
       return ws.close(0);
     }
 
-    const user = new User("0", findAvailableSquare(), ws);
+    const user = new User("baka", findAvailableSquare(), ws);
 
     sendPacketToAll("join", {
       user,
@@ -148,8 +149,8 @@ function reqHandler(req: Request) {
 
       if (map[user.location.y][user.location.x] == "food") {
         map[user.location.y][user.location.x] = "";
-        if (user.name !== "100") {
-          user.name = (+user.name) + 1 + "";
+        if (user.food !== 100) {
+          user.food += 1;
         }
         sendPacketToAll("update", {
           user,
@@ -193,7 +194,7 @@ serve(reqHandler, { port: +(Deno.env.get("PORT") || 8000) });
 console.log("started");
 
 function makeFood() { // courtesy of Feenicks#6105
-  setTimeout(makeFood, (Math.random() * 3000 + 2000) / Math.max(users.size, 1));
+  setTimeout(makeFood, (Math.random() * 5000 + 5000) / Math.max(users.size, 1));
 
   if (users.size == 0) return;
 

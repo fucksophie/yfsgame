@@ -11,7 +11,7 @@ function drawTile(id, location) {
         tile.style.color = "white"
     }
 
-    tile.innerText = ussr.name;
+    tile.innerText = `<${user.food}>${user.name}`;
 }
 
 function clearTile(location) {
@@ -118,15 +118,15 @@ ws.addEventListener("message", msg => {
 
         if(ussr.drawing) {
             const tile = document.getElementById(`x${ussr.location.x}y${ussr.location.y}`);
-            if(ussr.name == "100") {
+            if(ussr.food == 100) {
                 tile.style.backgroundColor = "red"
-            } else if(+ussr.name >= 80) {
+            } else if(ussr.food >= 80) {
                 tile.style.backgroundColor = "green"
-            } else if(+ussr.name >= 60) {
+            } else if(ussr.food >= 60) {
                 tile.style.backgroundColor = "blue"
-            }  else if(+ussr.name >= 30) {
+            }  else if(ussr.food >= 30) {
                 tile.style.backgroundColor = "aqua"
-            } else if(+ussr.name >= 10) {
+            } else if(ussr.food >= 10) {
                 tile.style.backgroundColor = "pink"
             } else {
                 tile.style.backgroundColor = "grey"
@@ -139,7 +139,7 @@ ws.addEventListener("message", msg => {
 
                 drawTile(u55r.id, u55r.location)
 
-            }, (+ussr.name)*100)
+            }, ussr.food*100)
         }
 
         ussr.location = json.location;
@@ -152,6 +152,7 @@ ws.addEventListener("message", msg => {
     if(json.type == "update") {
         const ussr = users.find(e => e.id == json.user.id);
         ussr.name = json.user.name;
+        ussr.food = json.user.food;
     }
 
     if (json.type == "bye") {
