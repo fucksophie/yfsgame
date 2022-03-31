@@ -20,6 +20,7 @@ class User {
     this.location = location;
     this.ws = ws;
     this.id = crypto.randomUUID();
+    this.food = 0;
   }
 
   sendPacket(type: string, packet: any) {
