@@ -14,7 +14,6 @@ class User {
   ws!: WebSocket;
   drawing!: boolean;
 
-
   constructor(name: string, location: { x: number; y: number }, ws: WebSocket) {
     this.name = name;
     this.location = location;
@@ -29,16 +28,15 @@ class User {
     }));
   }
 }
-const square = "15x15".split('x').map(e=>+e);
+const square = "15x15".split("x").map((e) => +e);
 
-const map: (string | undefined)[][] = " ".repeat(square[0]).split(" ").map((_e) =>
-  " ".repeat(square[1]).split(" ")
-);
+const map: (string | undefined)[][] = " ".repeat(square[0]).split(" ").map((
+  _e,
+) => " ".repeat(square[1]).split(" "));
 const users: Collection<string, User> = new Collection<string, User>();
 
 const sendPacketToAll = (type: string, packet: any) =>
   users.forEach((e) => e.sendPacket(type, packet));
-
 
 const findAvailableSquare = (): Location => {
   let lol;
@@ -56,17 +54,15 @@ const findRandomAvailableSquare = (): Location => {
 
   map.forEach((y, yi) => {
     y.forEach((x, xi) => {
-      if(x && y) return { x: square[0], y: square[1] };
+      if (x && y) return { x: square[0], y: square[1] };
       good.push({ x: xi, y: yi });
     });
   });
 
-  return good[Math.floor(Math.random() * good.length)]
-}
+  return good[Math.floor(Math.random() * good.length)];
+};
 function reqHandler(req: Request) {
-  
   if (req.headers.get("upgrade") != "websocket") {
-    
     return new Response(null, { status: 501 });
   }
   const { socket: ws, response } = Deno.upgradeWebSocket(req);
@@ -74,12 +70,11 @@ function reqHandler(req: Request) {
   let id: string;
 
   ws.addEventListener("open", () => {
-    if(users.size >= square[0]*square[1]) {
-      
+    if (users.size >= square[0] * square[1]) {
       ws.send(JSON.stringify({
-        type: "warning", 
-        message: "[ERROR] Game is full!"
-      }))
+        type: "warning",
+        message: "[ERROR] Game is full!",
+      }));
 
       return ws.close(0);
     }
@@ -94,117 +89,119 @@ function reqHandler(req: Request) {
 
     id = user.id;
 
-    user.sendPacket("map", {map});
+    user.sendPacket("map", { map });
 
-    user.sendPacket("users", 
-    { users: users.map(e => {return {id: e.id, location: e.location, name: e.name}})}
-    );
+    user.sendPacket("users", {
+      users: users.map((e) => {
+        return { id: e.id, location: e.location, name: e.name };
+      }),
+    });
 
-
-    user.sendPacket("hi", {user});
-
+    user.sendPacket("hi", { user });
 
     map[user.location.y][user.location.x] = user.id;
   });
-  ws.addEventListener("message", message => {
-      // proper parsing here
-      
-      // handle json errors
+  ws.addEventListener("message", (message) => {
+    // proper parsing here
 
-      const json = JSON.parse(message.data);
-      const user = users.get(id);
-      
-      if(!user) return ws.close();
+    // handle json errors
 
-        if(json.type == "startDrawing") {
-          sendPacketToAll("startDrawing", {
-            id: user.id
-          })
-          user.drawing = true;
-          users.set(user.id, user)
+    const json = JSON.parse(message.data);
+    const user = users.get(id);
+
+    if (!user) return ws.close();
+
+    if (json.type == "startDrawing") {
+      sendPacketToAll("startDrawing", {
+        id: user.id,
+      });
+      user.drawing = true;
+      users.set(user.id, user);
+    }
+
+    if (json.type == "stopDrawing") {
+      sendPacketToAll("stopDrawing", {
+        id: user.id,
+      });
+      user.drawing = false;
+      users.set(user.id, user);
+    }
+
+    if (json.type == "move") {
+      const oldpos = { ...user.location }; // {...} trick so we can make new obj
+
+      if (json.location == "up") user.location.y -= 1;
+      if (json.location == "down") user.location.y += 1;
+
+      if (json.location == "left") user.location.x -= 1;
+      if (json.location == "right") user.location.x += 1;
+
+      if (
+        user.location.x < 0 || user.location.y < 0 ||
+        user.location.y > square[0] ||
+        user.location.x > square[1]
+      ) {
+        user.location = oldpos;
+
+        return;
+      }
+
+      if (map[user.location.y][user.location.x] == "food") {
+        map[user.location.y][user.location.x] = "";
+        if (user.name !== "100") {
+          user.name = (+user.name) + 1 + "";
         }
+        sendPacketToAll("update", {
+          user,
+        });
+      }
 
-        if(json.type == "stopDrawing") {
-          sendPacketToAll("stopDrawing", {
-            id: user.id
-          })
-          user.drawing = false;
-          users.set(user.id, user)
-        }
+      if (map[user.location.y][user.location.x]) {
+        user.location = oldpos;
+        return;
+      }
+      map[oldpos.y][oldpos.x] = "";
+      map[user.location.y][user.location.x] = user.id;
 
-        if(json.type == "move") {
-            const oldpos = {...user.location}; // {...} trick so we can make new obj
+      users.set(user.id, user);
 
-            if(json.location == "up") user.location.y -= 1;
-            if(json.location == "down") user.location.y += 1;
-
-            if(json.location == "left") user.location.x -= 1;
-            if(json.location == "right") user.location.x += 1;
-
-            if(user.location.x < 0 || user.location.y < 0 || user.location.y > square[0]
-                || user.location.x > square[1]) {
-                user.location = oldpos;
-                
-                return;
-            } 
-
-            if(map[user.location.y][user.location.x] == "food") {
-              map[user.location.y][user.location.x] = "";
-              if(user.name !== "100") {
-                user.name = (+user.name)+1+""
-
-              } 
-              sendPacketToAll("update", {
-                user
-              });
-            }
-
-            if(map[user.location.y][user.location.x]) {
-              user.location = oldpos;
-              return;
-            }
-            map[oldpos.y][oldpos.x] = ''            
-            map[user.location.y][user.location.x] = user.id;
-
-            users.set(user.id, user)
-
-            sendPacketToAll("move", {
-                id: user.id, 
-                location: user.location
-            });
-        }
-  })
+      sendPacketToAll("move", {
+        id: user.id,
+        location: user.location,
+      });
+    }
+  });
 
   ws.addEventListener("close", () => {
     const user = users.get(id);
-    
-    if(!user) return;
+
+    if (!user) return;
 
     map[user.location.y][user.location.x] = "";
 
-    users.delete(id);   
+    users.delete(id);
     sendPacketToAll("bye", {
-      id: user.id
-    }) 
+      id: user.id,
+    });
   });
-  
+
   return response;
 }
 
 serve(reqHandler, { port: +(Deno.env.get("PORT") || 8000) });
 
-console.log("started")
+console.log("started");
 
 function makeFood() { // courtesy of Feenicks#6105
-  if(users.size == 0) return;
+  if (users.size == 0) return;
 
   const location = findRandomAvailableSquare();
 
   map[location.y][location.x] = "food";
 
-  sendPacketToAll("food", {location});
+  sendPacketToAll("food", { location });
 
-  setTimeout(makeFood, (Math.random() * 3000 + 2000)/Math.max(users.size, 1));
+  setTimeout(makeFood, (Math.random() * 3000 + 2000) / Math.max(users.size, 1));
 }
 
-makeFood()
+makeFood();
