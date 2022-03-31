@@ -10,8 +10,9 @@ function drawTile(id, location) {
         tile.style.backgroundColor = "red"
         tile.style.color = "white"
     }
-
-    tile.innerText = `<${user.food}>${user.name}`;
+    
+    tile.title = ussr.food+""
+    tile.innerText = ussr.name;
 }
 
 function clearTile(location) {
