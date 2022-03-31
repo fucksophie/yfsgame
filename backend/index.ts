@@ -193,6 +193,8 @@ serve(reqHandler, { port: +(Deno.env.get("PORT") || 8000) });
 console.log("started");
 
 function makeFood() { // courtesy of Feenicks#6105
+  setTimeout(makeFood, (Math.random() * 3000 + 2000) / Math.max(users.size, 1));
+
   if (users.size == 0) return;
 
   const location = findRandomAvailableSquare();
@@ -200,8 +202,6 @@ function makeFood() { // courtesy of Feenicks#6105
   map[location.y][location.x] = "food";
 
   sendPacketToAll("food", { location });
-
-  setTimeout(makeFood, (Math.random() * 3000 + 2000) / Math.max(users.size, 1));
 }
 
 makeFood();
