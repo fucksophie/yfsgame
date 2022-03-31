@@ -2,7 +2,6 @@
 import { serve } from "https://deno.land/std@0.132.0/http/mod.ts";
 import { Collection } from "https://deno.land/x/harmony@v2.6.0/src/utils/collection.ts";
 
-console.log("wow start1")
 interface Location {
   x: number;
   y: number;
@@ -57,7 +56,7 @@ const findRandomAvailableSquare = (): Location => {
 
   map.forEach((y, yi) => {
     y.forEach((x, xi) => {
-      if(x && y) return;
+      if(x && y) return { x: square[0], y: square[1] };
       good.push({ x: xi, y: yi });
     });
   });
@@ -174,8 +173,8 @@ function reqHandler(req: Request) {
                 location: user.location
             });
         }
-
   })
+
   ws.addEventListener("close", () => {
     const user = users.get(id);
     
@@ -187,22 +186,25 @@ function reqHandler(req: Request) {
     sendPacketToAll("bye", {
       id: user.id
     }) 
-    
-    
   });
   
   return response;
 }
 
 serve(reqHandler, { port: +(Deno.env.get("PORT") || 8000) });
+
 console.log("started")
 
-setInterval(() => {
+function makeFood() { // courtesy of Feenicks#6105
   if(users.size == 0) return;
+
   const location = findRandomAvailableSquare();
-  if(!location) return;
-  map[location.y][location.x] = "food"
-  sendPacketToAll("food", {
-    location
-  })
-}, 2000)
+
+  map[location.y][location.x] = "food";
+
+  sendPacketToAll("food", {location});
+
+  setTimeout(makeFood, (Math.random() * 3000 + 2000)/Math.max(users.size, 1));
+}
+
+makeFood()
